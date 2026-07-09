@@ -1,8 +1,10 @@
 # --- Large files that must NEVER be pushed to GitHub/Render ---
 data/
 archive.zip
+# keep report metrics CSVs and the Streamlit sample pool; ignore all other CSVs
 *.csv
-!report/*.csv          # keep the small metrics CSVs in report/
+!report/*.csv
+!frontend/*.csv
 
 # Course materials (not part of deployment)
 course_materials/
