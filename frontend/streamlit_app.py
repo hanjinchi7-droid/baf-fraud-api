@@ -77,10 +77,13 @@ def prettify(feat: str) -> str:
 
 @st.cache_data(show_spinner=False)
 def load_pool():
-    try:
-        return pd.read_csv(HERE / "sample_pool.csv")
-    except Exception:
-        return None
+    for path in (HERE / "sample_pool.csv", Path("frontend/sample_pool.csv"), Path("sample_pool.csv")):
+        try:
+            if Path(path).exists():
+                return pd.read_csv(path)
+        except Exception:
+            continue
+    return None
 
 
 @st.cache_data(show_spinner=False)
@@ -298,9 +301,16 @@ with tab_single:
         new MutationObserver(colourButtons)
           .observe(window.parent.document.body, {childList: true, subtree: true});
         </script>""", height=0)
-    st.caption("The two case buttons load *real* applications together with their true fraud outcome, "
-               "so after scoring you can compare the model decision with the ground truth — a direct "
-               "look at the model's catches (true positives), misses (false negatives) and false alarms.")
+    _pool = load_pool()
+    if _pool is None:
+        st.warning("Sample pool not found — the case buttons are using fixed fallback examples. "
+                   "(If you just deployed, reboot the app so it picks up sample_pool.csv.)")
+    else:
+        st.caption(f"Sample pool loaded: {len(_pool)} real applications "
+                   f"({int((_pool['fraud_bool'] == 1).sum())} fraud, "
+                   f"{int((_pool['fraud_bool'] == 0).sum())} legitimate). "
+                   "The two case buttons draw a random real application with its true fraud outcome, "
+                   "so after scoring you can compare the model decision with the ground truth.")
 
     with st.form("application"):
         subtabs = st.tabs(list(GROUPS))
