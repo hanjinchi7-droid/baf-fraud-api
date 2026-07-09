@@ -1,0 +1,9 @@
+# Full local/notebook environment: install with `pip install -r requirements-dev.txt`.
+# Includes everything in requirements.txt plus the tools used to run the notebook,
+# generate the EDA figures, and train/compare models locally.
+-r requirements.txt
+matplotlib==3.9.4
+seaborn==0.13.2
+imbalanced-learn==0.12.4
+jupyterlab==4.3.5
+httpx==0.28.1
