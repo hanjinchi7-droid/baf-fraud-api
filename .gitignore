@@ -1,0 +1,21 @@
+# --- Large files that must NEVER be pushed to GitHub/Render ---
+data/
+archive.zip
+*.csv
+!report/*.csv          # keep the small metrics CSVs in report/
+
+# Course materials (not part of deployment)
+course_materials/
+courseMeterial/
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+.joblib_tmp/
+.ipynb_checkpoints/
+scratch_train.log
+scratch*.log
+
+# Keep the model bundle (556 KB) — it IS needed for deployment:
+!api/model_bundle.joblib
