@@ -1,11 +1,4 @@
-"""Streamlit front-end for the BAF agentic fraud-triage service.
-
-Single-application scoring and batch CSV scoring against the deployed FastAPI
-`/predict` endpoint, with per-instance SHAP risk factors compared to population
-baselines. Run locally with:
-
-    streamlit run frontend/streamlit_app.py
-"""
+"""Streamlit UI that calls the /predict API (single + batch scoring)."""
 import json
 from pathlib import Path
 
@@ -23,7 +16,7 @@ except Exception:  # pragma: no cover
 HERE = Path(__file__).parent
 DEFAULT_API = "https://baf-fraud-api.onrender.com"
 
-# Fallback presets, used only if the bundled sample pool is unavailable.
+# fallback if sample_pool.csv is missing
 HIGH_RISK = {
     "income": 0.9, "name_email_similarity": 0.109, "prev_address_months_count": -1,
     "current_address_months_count": 101, "customer_age": 60, "days_since_request": 0.0083,
@@ -98,7 +91,7 @@ REFERENCE = load_reference()
 
 
 def applicant_vs_population(name, payload):
-    """Return (applicant_str, population_str, vs_average_str) for a SHAP feature name."""
+    # applicant value vs population baseline for one feature
     ref = REFERENCE.get(name)
     if name in NUMERIC:
         av = payload.get(name)
@@ -182,8 +175,7 @@ def load_random(kind: str):
         sub = pool[pool["fraud_bool"] == 0]
     row = sub.sample(1).iloc[0].to_dict()
     _set_fields(row)
-    # Remember the true outcome so we can show hit/miss after scoring, but only
-    # while the loaded application is not manually edited.
+    # keep the true label for the hit/miss check (only valid if not edited)
     st.session_state["loaded_payload"] = {f: st.session_state[f"f_{f}"] for f in FIELDS}
     st.session_state["loaded_label"] = int(row["fraud_bool"])
 
@@ -279,7 +271,7 @@ with tab_single:
     b2.button("Random fraud case", on_click=load_random, args=("fraud",), use_container_width=True)
     b3.button("Random legitimate case", on_click=load_random, args=("nonfraud",),
               use_container_width=True)
-    # Colour the two case buttons by their label text — version-independent, works on any Streamlit.
+    # colour the two case buttons by label text
     components.html(
         """<script>
         function colourButtons() {
@@ -333,7 +325,7 @@ with tab_single:
 
     if submitted:
         payload = {f: st.session_state[f"f_{f}"] for f in FIELDS}
-        # Only trust the stored ground-truth label if the loaded example is unedited.
+        # only use the true label if the example wasn't edited
         true_label = (st.session_state.get("loaded_label")
                       if payload == st.session_state.get("loaded_payload") else None)
         try:

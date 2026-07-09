@@ -1,4 +1,4 @@
-"""FastAPI service for temporal BAF fraud-risk scoring."""
+"""Fraud scoring API."""
 from pathlib import Path
 from typing import Any
 
@@ -53,7 +53,7 @@ class Application(BaseModel):
 app = FastAPI(
     title="BAF Agentic Fraud-Triage API",
     version="1.0.0",
-    description="Scores bank account applications and returns grounded SHAP risk factors.",
+    description="Scores an application and returns SHAP risk factors.",
 )
 
 
@@ -70,8 +70,7 @@ def explain_one(transformed: np.ndarray, top_n: int = 5) -> list[dict[str, Any]]
     values = np.asarray(EXPLAINER.shap_values(transformed))[0]
     names = np.asarray(BUNDLE["transformed_feature_names"])
     feature_values = transformed[0]
-    # Risk factors are positive contributions only; fall back to largest absolute
-    # effects if this unusually low-risk record has no positive contribution.
+    # features pushing risk up; if none, take the biggest by magnitude
     candidate = np.flatnonzero(values > 0)
     if not len(candidate):
         candidate = np.arange(len(values))
